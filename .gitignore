@@ -52,6 +52,7 @@ captures/
 *.aab
 *.ap_
 *.dex
+*.exe
 output.json
 
 # --- Security, Keystores & Private Credentials ---
