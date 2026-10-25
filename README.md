@@ -145,6 +145,18 @@ adb install KovanLLM.apk
 
 ---
 
+## ☕ Support the Project
+
+If AselCam makes your meetings, streams, or workflows better, consider supporting ongoing development:
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/aselens" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" style="height: 60px !important;width: 217px !important;">
+  </a>
+</p>
+
+---
+
 ## 📄 License & Attribution
 
 This project is licensed under the [MIT License](LICENSE).
