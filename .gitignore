@@ -1,0 +1,98 @@
+# ==========================================
+# KovanLLM .gitignore
+# Created by Aselens Software℠ (https://aselens.com)
+# ==========================================
+
+# --- Python & Virtual Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# --- Android & Gradle ---
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.kotlin/
+.gradle/
+*.hprof
+.cxx/
+captures/
+
+# --- Release Artifacts & Mobile Packages ---
+*.apk
+*.aab
+*.ap_
+*.dex
+output.json
+
+# --- Security, Keystores & Private Credentials ---
+*.keystore
+*.jks
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+*.crt
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.secret
+.env
+.env.local
+.env.*.local
+
+# --- Desktop Heavy Binaries & Local Models ---
+desktop/bin/cloudflared*
+desktop/bin/piper*
+desktop/models/tts/
+*.log
+*.tmp
+*.bak
+
+# --- IDEs & System Files ---
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+*.swp
+*.swo
+
+# --- SDD & Temp Cache ---
+.superpowers/sdd/
+graphify-out/

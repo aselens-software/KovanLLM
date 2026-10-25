@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=KovanLLM
+GenericName=Local LLM Station & Mobile Pairing Hub
+Comment=Run local LLM models and stream them securely to mobile devices
+Exec=python3 desktop_gui.py
+Icon=kovanllm
+Terminal=false
+Categories=Utility;Development;ArtificialIntelligence;
+StartupWMClass=KovanLLM
