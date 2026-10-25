@@ -576,15 +576,22 @@ class MainActivity : ComponentActivity(), TextToSpeech.OnInitListener {
                                 startChatStreaming(text, mediaUri, mediaName)
                             },
                             onRegenerate = {
-                                val lastUserMsg = messages.lastOrNull { it.role == "user" }
-                                if (lastUserMsg != null) {
-                                    if (messages.isNotEmpty() && messages.last().role == "assistant") {
-                                        messages.removeAt(messages.size - 1)
+                                if (!isStreaming) {
+                                    val lastUserMsg = messages.lastOrNull { it.role == "user" }
+                                    if (lastUserMsg != null) {
+                                        if (messages.isNotEmpty() && messages.last().role == "assistant") {
+                                            messages.removeAt(messages.size - 1)
+                                        }
+                                        if (currentSession.messages.isNotEmpty() && currentSession.messages.last().role == "assistant") {
+                                            currentSession.messages.removeAt(currentSession.messages.size - 1)
+                                        }
+                                        executeChatTurn(
+                                            lastUserMsg.content,
+                                            lastUserMsg.attachedMediaUri,
+                                            lastUserMsg.attachedMediaName,
+                                            isUserAlreadyAdded = true
+                                        )
                                     }
-                                    if (currentSession.messages.isNotEmpty() && currentSession.messages.last().role == "assistant") {
-                                        currentSession.messages.removeAt(currentSession.messages.size - 1)
-                                    }
-                                    startChatStreaming(lastUserMsg.content, lastUserMsg.attachedMediaUri, lastUserMsg.attachedMediaName)
                                 }
                             },
                             onStopStreaming = {

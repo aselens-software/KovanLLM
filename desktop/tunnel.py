@@ -52,16 +52,32 @@ class MultiTunnelManager:
                     pass
             self.process = None
 
+    def _drain_stdout(self, proc):
+        try:
+            while self.is_running and proc.poll() is None:
+                line = proc.stdout.readline() if proc.stdout else ""
+                if not line:
+                    time.sleep(0.1)
+        except Exception:
+            pass
+
     def _try_cloudflared(self) -> str:
         bin_path = self.get_cloudflared_path()
         if not bin_path:
             return ""
 
+        # Use TCP HTTP/2 multiplexing, IPv4 edge routing, persistent keepalive, and retries
+        # This prevents QUIC/UDP timeouts behind home CGNAT/ISPs and keeps the tunnel alive indefinitely.
         cmd = [
             bin_path,
             "tunnel",
             "--url", f"http://127.0.0.1:{self.target_port}",
-            "--no-autoupdate"
+            "--no-autoupdate",
+            "--protocol", "http2",
+            "--edge-ip-version", "4",
+            "--retries", "15",
+            "--grace-period", "30s",
+            "--proxy-keepalive-timeout", "10m"
         ]
         kwargs = {}
         if sys.platform == "win32":
@@ -79,8 +95,8 @@ class MultiTunnelManager:
             url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
             
             start_time = time.time()
-            # Give cloudflared up to 4.5 seconds to establish tunnel
-            while time.time() - start_time < 4.5 and self.is_running:
+            # Give cloudflared up to 12 seconds to establish edge connections
+            while time.time() - start_time < 12.0 and self.is_running:
                 if proc.poll() is not None:
                     # Process exited early (e.g. 429 rate limit)
                     break
@@ -91,7 +107,10 @@ class MultiTunnelManager:
                 match = url_pattern.search(line)
                 if match:
                     self.provider = "cloudflare"
-                    return match.group(0)
+                    found_url = match.group(0)
+                    # Start background thread to drain stdout continuously so pipe never buffers or blocks!
+                    threading.Thread(target=self._drain_stdout, args=(proc,), daemon=True).start()
+                    return found_url
 
             # Failed or timed out
             try:
@@ -117,8 +136,8 @@ class MultiTunnelManager:
             ssh_bin,
             "-o", "StrictHostKeyChecking=no",
             "-o", "ServerAliveInterval=15",
-            "-o", "ServerAliveCountMax=3",
-            "-o", "ConnectTimeout=6",
+            "-o", "ServerAliveCountMax=5",
+            "-o", "ConnectTimeout=8",
             "-R", f"80:127.0.0.1:{self.target_port}",
             "nokey@localhost.run"
         ]
@@ -138,8 +157,8 @@ class MultiTunnelManager:
             url_pattern = re.compile(r"https://[a-zA-Z0-9-]+\.lhr\.life")
             
             start_time = time.time()
-            # Give localhost.run up to 6 seconds to provide URL
-            while time.time() - start_time < 6.0 and self.is_running:
+            # Give localhost.run up to 8 seconds to provide URL
+            while time.time() - start_time < 8.0 and self.is_running:
                 if proc.poll() is not None:
                     break
                 line = proc.stdout.readline() if proc.stdout else ""
@@ -149,7 +168,9 @@ class MultiTunnelManager:
                 match = url_pattern.search(line)
                 if match:
                     self.provider = "localhost.run"
-                    return match.group(0)
+                    found_url = match.group(0)
+                    threading.Thread(target=self._drain_stdout, args=(proc,), daemon=True).start()
+                    return found_url
 
             try:
                 proc.terminate()
@@ -165,38 +186,51 @@ class MultiTunnelManager:
             print(f"[Tunnel] ssh tunnel exception: {e}")
             return ""
 
-    def start(self, on_url_ready=None):
+    def start(self, on_url_ready=None, force_restart=False):
         if on_url_ready:
             self._on_url_ready_cb = on_url_ready
+
+        # If an active healthy tunnel is already running and restart is not forced, keep using it!
+        if not force_restart and self.is_alive() and self.public_url:
+            print(f"[Tunnel] Using existing active tunnel: {self.public_url}")
+            if self._on_url_ready_cb:
+                self._on_url_ready_cb(self.public_url)
+            return self.public_url
 
         self.stop()
         self.is_running = True
 
         def run_tunnel():
-            print("[Tunnel] Attempting Cloudflare Tunnel...")
-            url = self._try_cloudflared()
+            while self.is_running:
+                print("[Tunnel] Attempting Cloudflare Tunnel (persistent http2)...")
+                url = self._try_cloudflared()
 
-            if not url and self.is_running:
-                print("[Tunnel] Cloudflare tunnel unavailable or rate-limited. Falling back to localhost.run SSH tunnel...")
-                url = self._try_ssh_tunnel()
+                if not url and self.is_running:
+                    print("[Tunnel] Cloudflare tunnel unavailable. Falling back to localhost.run SSH tunnel...")
+                    url = self._try_ssh_tunnel()
 
-            if url and self.is_running:
-                self.public_url = url
-                print(f"[Tunnel] Connected successfully via {self.provider}: {url}")
-                if self._on_url_ready_cb:
-                    self._on_url_ready_cb(url)
+                if url and self.is_running:
+                    self.public_url = url
+                    print(f"[Tunnel] Connected successfully via {self.provider}: {url}")
+                    if self._on_url_ready_cb:
+                        self._on_url_ready_cb(url)
 
-                # Keep connection alive while is_running is True
-                while self.is_running and self.process:
-                    if self.process.poll() is not None:
-                        print("[Tunnel] Active tunnel process closed.")
-                        break
-                    time.sleep(1.0)
-            else:
-                self.public_url = ""
-                print("[Tunnel] Tunnels unavailable. Operating in Local Wi-Fi Mode.")
-                if self._on_url_ready_cb:
-                    self._on_url_ready_cb("")
+                    # Keep connection alive while is_running is True
+                    while self.is_running and self.process:
+                        if self.process.poll() is not None:
+                            print("[Tunnel] Active tunnel process closed unexpectedly.")
+                            break
+                        time.sleep(1.0)
+
+                    # If closed unexpectedly while app is still running, briefly wait and loop to reconnect
+                    if self.is_running:
+                        time.sleep(2.0)
+                else:
+                    self.public_url = ""
+                    print("[Tunnel] Tunnels unavailable. Operating in Local Wi-Fi Mode.")
+                    if self._on_url_ready_cb:
+                        self._on_url_ready_cb("")
+                    break
 
         self._thread = threading.Thread(target=run_tunnel, daemon=True)
         self._thread.start()

@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
     QFrame, QMessageBox, QLineEdit, QCheckBox, QSpinBox, QScrollArea,
     QGraphicsDropShadowEffect
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QObject, QPoint, QByteArray
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QObject, QPoint, QByteArray, QRectF, QEvent
 from PyQt6.QtGui import QPixmap, QImage, QFont, QColor, QIcon, QPainter
 from PyQt6.QtSvg import QSvgRenderer
 
@@ -35,10 +35,26 @@ def get_fa_icon(name: str, color: str = "#D97706", size: int = 16) -> QIcon:
             content = f.read()
         content = content.replace("currentColor", color)
         renderer = QSvgRenderer(QByteArray(content.encode("utf-8")))
-        pixmap = QPixmap(size, size)
+
+        # High resolution canvas (96x96) prevents blur/pixelation
+        canvas_size = 96.0
+        default_size = renderer.defaultSize()
+        orig_w = float(default_size.width()) if default_size.width() > 0 else 512.0
+        orig_h = float(default_size.height()) if default_size.height() > 0 else 512.0
+
+        # Preserve exact aspect ratio to prevent icon stretching or distortion
+        scale = min(canvas_size / orig_w, canvas_size / orig_h)
+        dest_w = orig_w * scale
+        dest_h = orig_h * scale
+        offset_x = (canvas_size - dest_w) / 2.0
+        offset_y = (canvas_size - dest_h) / 2.0
+
+        pixmap = QPixmap(int(canvas_size), int(canvas_size))
         pixmap.fill(QColor(0, 0, 0, 0))
         painter = QPainter(pixmap)
-        renderer.render(painter)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+        renderer.render(painter, QRectF(offset_x, offset_y, dest_w, dest_h))
         painter.end()
         return QIcon(pixmap)
     except Exception:
@@ -219,6 +235,9 @@ class KovanDesktopWindow(QMainWindow):
 
         self.update_qr()
 
+        # Allow free window dragging from titlebar, header, or background
+        QApplication.instance().installEventFilter(self)
+
         # Start FastAPI in background daemon thread
         threading.Thread(target=self.run_fastapi_server, daemon=True).start()
 
@@ -231,8 +250,29 @@ class KovanDesktopWindow(QMainWindow):
     def t(self, key: str) -> str:
         return I18N.get(self.lang, I18N["en"]).get(key, key)
 
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() == Qt.MouseButton.LeftButton:
+                pos = event.globalPosition().toPoint()
+                widget = QApplication.widgetAt(pos)
+                from PyQt6.QtWidgets import (
+                    QPushButton, QSlider, QTextEdit, QLineEdit,
+                    QComboBox, QSpinBox, QCheckBox, QTabBar
+                )
+                if widget is not None and not isinstance(widget, (QPushButton, QSlider, QTextEdit, QLineEdit, QComboBox, QSpinBox, QCheckBox, QTabBar)):
+                    if self.frameGeometry().contains(pos):
+                        self._drag_pos = pos - self.frameGeometry().topLeft()
+                        return False
+        elif event.type() == QEvent.Type.MouseMove:
+            if event.buttons() == Qt.MouseButton.LeftButton and self._drag_pos is not None:
+                self.move(event.globalPosition().toPoint() - self._drag_pos)
+                return True
+        elif event.type() == QEvent.Type.MouseButtonRelease:
+            self._drag_pos = None
+        return super().eventFilter(source, event)
+
     def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton and event.position().y() < 55:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             event.accept()
 
@@ -1116,11 +1156,11 @@ class KovanDesktopWindow(QMainWindow):
     def run_fastapi_server(self):
         uvicorn.run(api_app, host="0.0.0.0", port=KOVAN_STATION_PORT, log_level="warning")
 
-    def start_tunnel_async(self):
+    def start_tunnel_async(self, force_restart: bool = False):
         def on_ready(url):
             signals.tunnel_ready.emit(url)
 
-        tunnel_manager.start(on_url_ready=on_ready)
+        tunnel_manager.start(on_url_ready=on_ready, force_restart=force_restart)
 
     def retry_tunnel(self):
         self.tunnel_text.setText(self.t("tunnel_starting"))
@@ -1130,7 +1170,7 @@ class KovanDesktopWindow(QMainWindow):
         """)
         self.tunnel_retry_btn.setEnabled(False)
         def bg():
-            self.start_tunnel_async()
+            self.start_tunnel_async(force_restart=True)
             QTimer.singleShot(2000, lambda: self.tunnel_retry_btn.setEnabled(True))
         threading.Thread(target=bg, daemon=True).start()
 

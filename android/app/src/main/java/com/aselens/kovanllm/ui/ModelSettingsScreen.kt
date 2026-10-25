@@ -1015,7 +1015,7 @@ fun ModelSettingsScreen(
                 }
             }
 
-            // Action Start Chat Button
+            // Action Start Chat Button (Blue)
             item {
                 Button(
                     onClick = onStartChat,
@@ -1023,12 +1023,16 @@ fun ModelSettingsScreen(
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2563EB),
+                        contentColor = Color.White
+                    )
                 ) {
-                    Icon(Icons.Default.ChatBubble, contentDescription = null, modifier = Modifier.size(19.dp))
+                    Icon(Icons.Default.ChatBubble, contentDescription = null, tint = Color.White, modifier = Modifier.size(19.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = I18n.t("start_chat_btn", language),
+                        color = Color.White,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )

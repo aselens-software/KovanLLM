@@ -308,32 +308,12 @@ fun ChatScreen(
                         }
                     },
                     actions = {
-                        // Live Voice Action
-                        IconButton(onClick = onStartLiveVoice) {
-                            Icon(
-                                Icons.Default.GraphicEq,
-                                contentDescription = I18n.t("live_voice_mode", language),
-                                tint = Color(0xFF10B981),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
                         // Theme Toggle
                         IconButton(onClick = onThemeToggle) {
                             Icon(
                                 imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
                                 contentDescription = "Theme",
                                 tint = colors.onSurface
-                            )
-                        }
-
-                        // Quick New Chat Action (Blue)
-                        IconButton(onClick = onNewSession) {
-                            Icon(
-                                Icons.Default.AddComment,
-                                contentDescription = I18n.t("new_chat", language),
-                                tint = Color(0xFF2563EB),
-                                modifier = Modifier.size(20.dp)
                             )
                         }
 
