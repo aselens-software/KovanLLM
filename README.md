@@ -1,8 +1,8 @@
 # 🐝 KovanLLM: Desktop & Standalone Mobile Local LLM Station (v1.1)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-amber.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20Android-orange)](https://github.com/aselens/kovanllm)
-[![Version](https://img.shields.io/badge/Version-v1.1-blue)](https://github.com/aselens/kovanllm/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20Android-orange)](https://github.com/aselens-software/kovanllm)
+[![Version](https://img.shields.io/badge/Version-v1.1-blue)](https://github.com/aselens-software/kovanllm/releases)
 [![Author](https://img.shields.io/badge/Created%20by-Aselens%20Software%E2%84%A0-black)](https://aselens.com)
 
 **KovanLLM** connects local large language models running on your home or workstation PC (LM Studio, Ollama, llama.cpp, etc.) directly to your Android device **without third-party VPNs, port forwarding, or complicated network configuration**. 
