@@ -92,6 +92,18 @@ I18N = {
         "require_pin_label": "Require Security PIN for Pairing",
         "pin_optional_badge": "PIN: Disabled (Optional)",
         "pin_required_badge": "PIN: {pin} (Required)",
+        "tab_advanced": "Advanced AI",
+        "adv_settings_title": "Advanced Model & Inference Tuning",
+        "adv_settings_desc": "Batch sizes, KV cache optimization, RoPE scaling and speculative decoding.",
+        "batch_size_label": "Evaluation Batch Size (tokens):",
+        "physical_batch_size_label": "Physical Batch Size (ubatch):",
+        "max_concurrent_label": "Max Concurrent Predictions:",
+        "unified_kv_cache_label": "Enable Unified KV Cache",
+        "context_checkpoints_label": "Enable Context Checkpoints / KV Shift",
+        "rope_freq_base_label": "RoPE Frequency Base:",
+        "speculative_decoding_label": "Enable Speculative Decoding",
+        "draft_tokens_label": "Draft Token Count:",
+        "flash_attention_label": "Enable Flash Attention Acceleration",
     },
     "tr": {
         "title": "KovanLLM",
@@ -140,6 +152,18 @@ I18N = {
         "require_pin_label": "Eşleşmede PIN Doğrulaması İste",
         "pin_optional_badge": "PIN: Devre Dışı (İsteğe Bağlı)",
         "pin_required_badge": "PIN: {pin} (Zorunlu)",
+        "tab_advanced": "Gelişmiş AI",
+        "adv_settings_title": "Gelişmiş Model & Çıkarım İnce Ayarları",
+        "adv_settings_desc": "Parti boyutları, KV önbellek optimizasyonu, RoPE ölçekleme ve spekülatif çıkarım.",
+        "batch_size_label": "Değerlendirme Parti Boyutu (Batch Size):",
+        "physical_batch_size_label": "Fiziksel Parti Boyutu (ubatch):",
+        "max_concurrent_label": "Maksimum Eşzamanlı Tahmin:",
+        "unified_kv_cache_label": "Birleşik KV Önbelleğini Etkinleştir",
+        "context_checkpoints_label": "Bağlam Denetim Noktaları (KV Shift) Kullan",
+        "rope_freq_base_label": "RoPE Frekans Temeli (Base):",
+        "speculative_decoding_label": "Spekülatif Kod Çözmeyi Etkinleştir",
+        "draft_tokens_label": "Taslak Token Sayısı:",
+        "flash_attention_label": "Flash Attention Hızlandırmasını Etkinleştir",
     }
 }
 
@@ -299,17 +323,21 @@ class KovanDesktopWindow(QMainWindow):
         self.pairing_tab = QWidget()
         self.engine_tab = QWidget()
         self.hardware_tab = QWidget()
+        self.advanced_tab = QWidget()
 
         self.setup_pairing_tab()
         self.setup_engine_tab()
         self.setup_hardware_tab()
+        self.setup_advanced_tab()
 
         self.tabs.addTab(self.pairing_tab, self.t("tab_pairing"))
         self.tabs.addTab(self.engine_tab, self.t("tab_engine"))
         self.tabs.addTab(self.hardware_tab, self.t("tab_model"))
+        self.tabs.addTab(self.advanced_tab, self.t("tab_advanced"))
         self.tabs.setTabIcon(0, get_fa_icon("mobile", "#D97706", 16))
         self.tabs.setTabIcon(1, get_fa_icon("sliders", "#D97706", 16))
         self.tabs.setTabIcon(2, get_fa_icon("microchip", "#D97706", 16))
+        self.tabs.setTabIcon(3, get_fa_icon("bolt", "#D97706", 16))
         outer_layout.addWidget(self.tabs)
 
         # Status Bar
@@ -345,9 +373,11 @@ class KovanDesktopWindow(QMainWindow):
         self.tabs.setTabText(0, self.t("tab_pairing"))
         self.tabs.setTabText(1, self.t("tab_engine"))
         self.tabs.setTabText(2, self.t("tab_model"))
+        self.tabs.setTabText(3, self.t("tab_advanced"))
         self.tabs.setTabIcon(0, get_fa_icon("mobile", "#D97706", 16))
         self.tabs.setTabIcon(1, get_fa_icon("sliders", "#D97706", 16))
         self.tabs.setTabIcon(2, get_fa_icon("microchip", "#D97706", 16))
+        self.tabs.setTabIcon(3, get_fa_icon("bolt", "#D97706", 16))
         self.theme_btn.setIcon(get_fa_icon("moon" if self.is_dark_theme else "sun", "#D97706", 16))
         self.lang_btn.setIcon(get_fa_icon("globe", "#D97706", 15))
         self.qr_hint.setText(self.t("scan_qr_hint"))
@@ -355,6 +385,18 @@ class KovanDesktopWindow(QMainWindow):
         self.desc.setText(self.t("connect_desc"))
         self.lan_label.setText(self.t("lan_title"))
         self.tunnel_title.setText(self.t("tunnel_title"))
+        if hasattr(self, "adv_title"):
+            self.adv_title.setText(self.t("adv_settings_title"))
+            self.adv_desc.setText(self.t("adv_settings_desc"))
+            self.batch_label.setText(self.t("batch_size_label"))
+            self.ubatch_label.setText(self.t("physical_batch_size_label"))
+            self.max_concurrent_label.setText(self.t("max_concurrent_label"))
+            self.unified_kv_check.setText(self.t("unified_kv_cache_label"))
+            self.context_cp_check.setText(self.t("context_checkpoints_label"))
+            self.rope_base_label.setText(self.t("rope_freq_base_label"))
+            self.speculative_check.setText(self.t("speculative_decoding_label"))
+            self.draft_tokens_label.setText(self.t("draft_tokens_label"))
+            self.flash_attn_check.setText(self.t("flash_attention_label"))
         if hasattr(self, "pin_title"):
             self.pin_title.setText(self.t("pin_title"))
         if hasattr(self, "pin_toggle"):
@@ -820,6 +862,119 @@ class KovanDesktopWindow(QMainWindow):
 
         scroll.setWidget(inner_widget)
         outer_layout = QVBoxLayout(self.hardware_tab)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.addWidget(scroll)
+
+    def setup_advanced_tab(self):
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setStyleSheet("background: transparent;")
+
+        inner_widget = QWidget()
+        layout = QVBoxLayout(inner_widget)
+        layout.setContentsMargins(14, 14, 14, 14)
+        layout.setSpacing(12)
+
+        self.adv_title = QLabel(self.t("adv_settings_title"))
+        self.adv_title.setFont(QFont("Arial", 15, QFont.Weight.Bold))
+        layout.addWidget(self.adv_title)
+
+        self.adv_desc = QLabel(self.t("adv_settings_desc"))
+        self.adv_desc.setStyleSheet("color: #9CA3AF; font-size: 12px;")
+        layout.addWidget(self.adv_desc)
+        layout.addSpacing(6)
+
+        # 1. Evaluation Batch Size
+        b_row = QHBoxLayout()
+        self.batch_label = QLabel(self.t("batch_size_label"))
+        self.batch_label.setStyleSheet("font-weight: 600;")
+        b_row.addWidget(self.batch_label)
+        self.batch_spin = QSpinBox()
+        self.batch_spin.setRange(32, 8192)
+        self.batch_spin.setSingleStep(128)
+        self.batch_spin.setValue(current_config.batch_size)
+        self.batch_spin.valueChanged.connect(lambda v: setattr(current_config, "batch_size", v))
+        b_row.addWidget(self.batch_spin)
+        layout.addLayout(b_row)
+
+        # 2. Physical Batch Size (ubatch)
+        ub_row = QHBoxLayout()
+        self.ubatch_label = QLabel(self.t("physical_batch_size_label"))
+        self.ubatch_label.setStyleSheet("font-weight: 600;")
+        ub_row.addWidget(self.ubatch_label)
+        self.ubatch_spin = QSpinBox()
+        self.ubatch_spin.setRange(16, 2048)
+        self.ubatch_spin.setSingleStep(64)
+        self.ubatch_spin.setValue(current_config.physical_batch_size)
+        self.ubatch_spin.valueChanged.connect(lambda v: setattr(current_config, "physical_batch_size", v))
+        ub_row.addWidget(self.ubatch_spin)
+        layout.addLayout(ub_row)
+
+        # 3. Max Concurrent Predictions
+        mc_row = QHBoxLayout()
+        self.max_concurrent_label = QLabel(self.t("max_concurrent_label"))
+        self.max_concurrent_label.setStyleSheet("font-weight: 600;")
+        mc_row.addWidget(self.max_concurrent_label)
+        self.max_concurrent_spin = QSpinBox()
+        self.max_concurrent_spin.setRange(1, 32)
+        self.max_concurrent_spin.setValue(current_config.max_concurrent_predictions)
+        self.max_concurrent_spin.valueChanged.connect(lambda v: setattr(current_config, "max_concurrent_predictions", v))
+        mc_row.addWidget(self.max_concurrent_spin)
+        layout.addLayout(mc_row)
+
+        # 4. Unified KV Cache
+        self.unified_kv_check = QCheckBox(self.t("unified_kv_cache_label"))
+        self.unified_kv_check.setChecked(current_config.unified_kv_cache)
+        self.unified_kv_check.toggled.connect(lambda v: setattr(current_config, "unified_kv_cache", v))
+        layout.addWidget(self.unified_kv_check)
+
+        # 5. Context Checkpoints / KV Shift
+        self.context_cp_check = QCheckBox(self.t("context_checkpoints_label"))
+        self.context_cp_check.setChecked(current_config.context_checkpoints)
+        self.context_cp_check.toggled.connect(lambda v: setattr(current_config, "context_checkpoints", v))
+        layout.addWidget(self.context_cp_check)
+
+        # 6. RoPE Frequency Base
+        rope_base_row = QHBoxLayout()
+        self.rope_base_label = QLabel(self.t("rope_freq_base_label"))
+        self.rope_base_label.setStyleSheet("font-weight: 600;")
+        rope_base_row.addWidget(self.rope_base_label)
+        self.rope_base_spin = QSpinBox()
+        self.rope_base_spin.setRange(1000, 10000000)
+        self.rope_base_spin.setSingleStep(10000)
+        self.rope_base_spin.setValue(int(current_config.rope_freq_base))
+        self.rope_base_spin.valueChanged.connect(lambda v: setattr(current_config, "rope_freq_base", float(v)))
+        rope_base_row.addWidget(self.rope_base_spin)
+        layout.addLayout(rope_base_row)
+
+        # 7. Speculative Decoding
+        self.speculative_check = QCheckBox(self.t("speculative_decoding_label"))
+        self.speculative_check.setChecked(current_config.speculative_decoding_enabled)
+        self.speculative_check.toggled.connect(lambda v: setattr(current_config, "speculative_decoding_enabled", v))
+        layout.addWidget(self.speculative_check)
+
+        # Draft tokens
+        dt_row = QHBoxLayout()
+        self.draft_tokens_label = QLabel(self.t("draft_tokens_label"))
+        self.draft_tokens_label.setStyleSheet("font-weight: 600;")
+        dt_row.addWidget(self.draft_tokens_label)
+        self.draft_tokens_spin = QSpinBox()
+        self.draft_tokens_spin.setRange(1, 16)
+        self.draft_tokens_spin.setValue(current_config.speculative_draft_tokens)
+        self.draft_tokens_spin.valueChanged.connect(lambda v: setattr(current_config, "speculative_draft_tokens", v))
+        dt_row.addWidget(self.draft_tokens_spin)
+        layout.addLayout(dt_row)
+
+        # 8. Flash Attention
+        self.flash_attn_check = QCheckBox(self.t("flash_attention_label"))
+        self.flash_attn_check.setChecked(current_config.flash_attention)
+        self.flash_attn_check.toggled.connect(lambda v: setattr(current_config, "flash_attention", v))
+        layout.addWidget(self.flash_attn_check)
+
+        layout.addStretch()
+        scroll.setWidget(inner_widget)
+        outer_layout = QVBoxLayout(self.advanced_tab)
         outer_layout.setContentsMargins(0, 0, 0, 0)
         outer_layout.addWidget(scroll)
 

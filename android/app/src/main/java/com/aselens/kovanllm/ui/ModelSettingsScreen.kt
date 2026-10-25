@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -618,14 +620,55 @@ fun ModelSettingsScreen(
                         }
 
                         if (engineConfig.systemRoleEnabled) {
-                            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                                GLOBAL_PRESETS.take(3).forEach { preset ->
-                                    PresetItem(
-                                        preset = preset,
-                                        language = language,
-                                        isSelected = engineConfig.systemPrompt == preset.systemPrompt,
-                                        onSelect = { onConfigChange(engineConfig.copy(systemPrompt = preset.systemPrompt)) }
-                                    )
+                            Text(
+                                text = I18n.t("all_presets", language),
+                                color = colors.onSurface.copy(alpha = 0.7f),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(GLOBAL_PRESETS) { preset ->
+                                    val name = if (language == "tr") preset.nameTr else preset.nameEn
+                                    val desc = if (language == "tr") preset.descriptionTr else preset.descriptionEn
+                                    val isSelected = engineConfig.systemPrompt == preset.systemPrompt
+                                    Box(
+                                        modifier = Modifier
+                                            .width(210.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSelected) colors.primaryContainer else colors.surface)
+                                            .border(
+                                                width = 1.dp,
+                                                color = if (isSelected) colors.primary else colors.outline,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .clickable { onConfigChange(engineConfig.copy(systemPrompt = preset.systemPrompt)) }
+                                            .padding(8.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(text = preset.icon, fontSize = 18.sp)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Column {
+                                                Text(
+                                                    text = name,
+                                                    color = if (isSelected) colors.primary else colors.onSurface,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                                )
+                                                Text(
+                                                    text = desc,
+                                                    color = colors.onSurface.copy(alpha = 0.6f),
+                                                    fontSize = 9.sp,
+                                                    maxLines = 2,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -646,6 +689,291 @@ fun ModelSettingsScreen(
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
+                        }
+                    }
+                }
+            }
+
+            // Advanced Model & Inference Parameters
+            item {
+                var isExpanded by remember { mutableStateOf(false) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(colors.surface)
+                        .border(1.dp, colors.outline, RoundedCornerShape(10.dp))
+                        .padding(12.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { isExpanded = !isExpanded },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Default.Tune,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = I18n.t("advanced_settings_title", language),
+                                        color = colors.onSurface,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = I18n.t("advanced_settings_desc", language),
+                                        color = colors.onSurface.copy(alpha = 0.6f),
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
+                            Icon(
+                                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = colors.onSurface.copy(alpha = 0.6f)
+                            )
+                        }
+
+                        if (isExpanded) {
+                            HorizontalDivider(color = colors.outline.copy(alpha = 0.5f))
+
+                            // 1. Evaluation Batch Size (Değerlendirme parti boyutu)
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(I18n.t("batch_size_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                    Text("${engineConfig.batchSize}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.primary, fontFamily = FontFamily.Monospace)
+                                }
+                                val batchOptions = listOf(128, 256, 512, 1024, 2048)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    batchOptions.forEach { opt ->
+                                        val isSel = engineConfig.batchSize == opt
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (isSel) colors.primaryContainer else colors.surface)
+                                                .border(1.dp, if (isSel) colors.primary else colors.outline, RoundedCornerShape(6.dp))
+                                                .clickable { onConfigChange(engineConfig.copy(batchSize = opt)) }
+                                                .padding(vertical = 5.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "$opt",
+                                                fontSize = 10.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSel) colors.primary else colors.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 2. Physical Batch Size (ubatch)
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(I18n.t("physical_batch_size_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                    Text("${engineConfig.physicalBatchSize}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.primary, fontFamily = FontFamily.Monospace)
+                                }
+                                val ubatchOptions = listOf(64, 128, 256, 512)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    ubatchOptions.forEach { opt ->
+                                        val isSel = engineConfig.physicalBatchSize == opt
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (isSel) colors.primaryContainer else colors.surface)
+                                                .border(1.dp, if (isSel) colors.primary else colors.outline, RoundedCornerShape(6.dp))
+                                                .clickable { onConfigChange(engineConfig.copy(physicalBatchSize = opt)) }
+                                                .padding(vertical = 5.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "$opt",
+                                                fontSize = 10.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSel) colors.primary else colors.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 3. Max Concurrent Predictions
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(I18n.t("max_concurrent_predictions_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    listOf(1, 2, 4, 8).forEach { cnt ->
+                                        val isSel = engineConfig.maxConcurrentPredictions == cnt
+                                        Box(
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (isSel) colors.primaryContainer else colors.surface)
+                                                .border(1.dp, if (isSel) colors.primary else colors.outline, RoundedCornerShape(6.dp))
+                                                .clickable { onConfigChange(engineConfig.copy(maxConcurrentPredictions = cnt)) },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "$cnt",
+                                                fontSize = 10.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSel) colors.primary else colors.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 4. Unified KV Cache
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(I18n.t("unified_kv_cache_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                Switch(
+                                    checked = engineConfig.unifiedKvCache,
+                                    onCheckedChange = { onConfigChange(engineConfig.copy(unifiedKvCache = it)) }
+                                )
+                            }
+
+                            // 5. Context Checkpoints / KV Shift
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(I18n.t("context_checkpoints_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                Switch(
+                                    checked = engineConfig.contextCheckpoints,
+                                    onCheckedChange = { onConfigChange(engineConfig.copy(contextCheckpoints = it)) }
+                                )
+                            }
+
+                            // 6. RoPE Frequency Base & Scale
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(I18n.t("rope_freq_base_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                    Text("${engineConfig.ropeFreqBase.toInt()}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.primary, fontFamily = FontFamily.Monospace)
+                                }
+                                val ropeBases = listOf(10000.0f, 50000.0f, 100000.0f, 500000.0f, 1000000.0f)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    ropeBases.forEach { base ->
+                                        val isSel = engineConfig.ropeFreqBase == base
+                                        val displayStr = if (base >= 1000000f) "1M" else "${(base / 1000).toInt()}k"
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .background(if (isSel) colors.primaryContainer else colors.surface)
+                                                .border(1.dp, if (isSel) colors.primary else colors.outline, RoundedCornerShape(6.dp))
+                                                .clickable { onConfigChange(engineConfig.copy(ropeFreqBase = base)) }
+                                                .padding(vertical = 5.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = displayStr,
+                                                fontSize = 10.sp,
+                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSel) colors.primary else colors.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // RoPE Frequency Scale Slider
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(I18n.t("rope_freq_scale_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                    Text(String.format("%.2f", engineConfig.ropeFreqScale), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.primary, fontFamily = FontFamily.Monospace)
+                                }
+                                Slider(
+                                    value = engineConfig.ropeFreqScale,
+                                    onValueChange = { onConfigChange(engineConfig.copy(ropeFreqScale = it)) },
+                                    valueRange = 0.5f..4.0f,
+                                    colors = SliderDefaults.colors(thumbColor = colors.primary, activeTrackColor = colors.primary)
+                                )
+                            }
+
+                            // 7. Speculative Decoding
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(I18n.t("speculative_decoding_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                    Switch(
+                                        checked = engineConfig.speculativeDecodingEnabled,
+                                        onCheckedChange = { onConfigChange(engineConfig.copy(speculativeDecodingEnabled = it)) }
+                                    )
+                                }
+                                if (engineConfig.speculativeDecodingEnabled) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(I18n.t("speculative_draft_tokens_label", language), fontSize = 10.sp, color = colors.onSurface.copy(alpha = 0.7f))
+                                        Text("${engineConfig.speculativeDraftTokens}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = colors.primary, fontFamily = FontFamily.Monospace)
+                                    }
+                                    Slider(
+                                        value = engineConfig.speculativeDraftTokens.toFloat(),
+                                        onValueChange = { onConfigChange(engineConfig.copy(speculativeDraftTokens = it.toInt())) },
+                                        valueRange = 1f..16f,
+                                        steps = 14,
+                                        colors = SliderDefaults.colors(thumbColor = colors.primary, activeTrackColor = colors.primary)
+                                    )
+                                }
+                            }
+
+                            // 8. Flash Attention
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(I18n.t("flash_attention_label", language), fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = colors.onSurface)
+                                Switch(
+                                    checked = engineConfig.flashAttention,
+                                    onCheckedChange = { onConfigChange(engineConfig.copy(flashAttention = it)) }
+                                )
+                            }
                         }
                     }
                 }

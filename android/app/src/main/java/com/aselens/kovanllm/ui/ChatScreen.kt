@@ -37,8 +37,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -178,11 +183,13 @@ fun ChatScreen(
                             onNewSession()
                             showSessionsModal = false
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        Text(I18n.t("new_chat", language), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(I18n.t("new_chat", language), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
 
@@ -317,6 +324,16 @@ fun ChatScreen(
                                 imageVector = if (isDark) Icons.Default.LightMode else Icons.Default.DarkMode,
                                 contentDescription = "Theme",
                                 tint = colors.onSurface
+                            )
+                        }
+
+                        // Quick New Chat Action (Blue)
+                        IconButton(onClick = onNewSession) {
+                            Icon(
+                                Icons.Default.AddComment,
+                                contentDescription = I18n.t("new_chat", language),
+                                tint = Color(0xFF2563EB),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
 
@@ -835,11 +852,11 @@ fun ChatBubble(
 
                 if (isUser) {
                     if (message.content.isNotBlank()) {
-                        Text(
-                            text = message.content,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            lineHeight = 20.sp
+                        RichMarkdownContent(
+                            content = message.content,
+                            isUser = true,
+                            language = language,
+                            onCopyCode = { code -> onCopyText(code, true) }
                         )
                     }
                     if (message.content.isNotBlank()) {
@@ -871,8 +888,9 @@ fun ChatBubble(
                     if (message.isStreaming && message.content.isEmpty()) {
                         ModelLoadingIndicator(language)
                     } else {
-                        FormattedAssistantContent(
+                        RichMarkdownContent(
                             content = message.content,
+                            isUser = false,
                             language = language,
                             onCopyCode = { code -> onCopyText(code, true) }
                         )
@@ -999,13 +1017,15 @@ fun ModelLoadingIndicator(language: String) {
 }
 
 @Composable
-fun FormattedAssistantContent(
+fun RichMarkdownContent(
     content: String,
+    isUser: Boolean,
     language: String,
     onCopyCode: (String) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val chunks = remember(content) { parseMarkdownCodeBlocks(content) }
+    val baseTextColor = if (isUser) Color.White else colors.onSurface
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         chunks.forEach { chunk ->
@@ -1015,22 +1035,22 @@ fun FormattedAssistantContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(colors.primaryContainer)
-                        .border(1.dp, colors.outline, RoundedCornerShape(8.dp))
+                        .background(if (isUser) Color.Black.copy(alpha = 0.35f) else colors.primaryContainer)
+                        .border(1.dp, if (isUser) Color.White.copy(alpha = 0.25f) else colors.outline, RoundedCornerShape(8.dp))
                 ) {
                     Column {
                         // Header with language tag and copy button
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(colors.surface)
+                                .background(if (isUser) Color.Black.copy(alpha = 0.45f) else colors.surface)
                                 .padding(horizontal = 8.dp, vertical = 3.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = chunk.languageTag.ifEmpty { "code" },
-                                color = colors.primary,
+                                color = if (isUser) Color.White.copy(alpha = 0.9f) else colors.primary,
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
@@ -1038,19 +1058,19 @@ fun FormattedAssistantContent(
                             Button(
                                 onClick = { onCopyCode(chunk.text) },
                                 shape = RoundedCornerShape(4.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = colors.primaryContainer),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isUser) Color.White.copy(alpha = 0.2f) else colors.primaryContainer),
                                 contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(11.dp))
+                                Icon(Icons.Default.ContentCopy, contentDescription = null, tint = if (isUser) Color.White else colors.onPrimaryContainer, modifier = Modifier.size(11.dp))
                                 Spacer(modifier = Modifier.width(3.dp))
-                                Text(I18n.t("copy_code", language), color = colors.onPrimaryContainer, fontSize = 10.sp)
+                                Text(I18n.t("copy_code", language), color = if (isUser) Color.White else colors.onPrimaryContainer, fontSize = 10.sp)
                             }
                         }
 
                         // Code content
                         Text(
                             text = chunk.text,
-                            color = colors.onPrimaryContainer,
+                            color = if (isUser) Color.White.copy(alpha = 0.95f) else colors.onPrimaryContainer,
                             fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace,
                             lineHeight = 17.sp,
@@ -1060,13 +1080,120 @@ fun FormattedAssistantContent(
                 }
             } else {
                 if (chunk.text.isNotBlank()) {
+                    val formatted = remember(chunk.text, isUser) {
+                        parseDiscordMarkdown(chunk.text, isUser, colors.primary)
+                    }
                     Text(
-                        text = chunk.text,
-                        color = colors.onSurface,
+                        text = formatted,
+                        color = baseTextColor,
                         fontSize = 14.sp,
                         lineHeight = 20.sp
                     )
                 }
+            }
+        }
+    }
+}
+
+fun parseDiscordMarkdown(
+    text: String,
+    isUser: Boolean,
+    primaryColor: Color
+): AnnotatedString {
+    val codeBg = if (isUser) Color.Black.copy(alpha = 0.30f) else Color(0x22888888)
+    val codeColor = if (isUser) Color.White else primaryColor
+
+    // Matches Discord markdown formatting tags:
+    // ***bold italic***, **bold**, ~~strikethrough~~, __underline__, `inline code`, *italic*, _italic_
+    val tokenRegex = Regex("""(\*\*\*[^\*\n]+?\*\*\*|\*\*[^\*\n]+?\*\*|~~[^~\n]+?~~|__[^_\n]+?__|`[^`\n]+?`|\*[^\*\n]+?\*|_[^_\n]+?_)""")
+
+    val lines = text.split('\n')
+    return buildAnnotatedString {
+        lines.forEachIndexed { lineIdx, line ->
+            if (lineIdx > 0) {
+                append("\n")
+            }
+
+            var processedLine = line
+            var headerStyle: SpanStyle? = null
+
+            // Discord & markdown headers (# , ## , ### ), bullet points (- , * ), quotes (> )
+            if (processedLine.startsWith("### ")) {
+                headerStyle = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                processedLine = processedLine.removePrefix("### ")
+            } else if (processedLine.startsWith("## ")) {
+                headerStyle = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                processedLine = processedLine.removePrefix("## ")
+            } else if (processedLine.startsWith("# ")) {
+                headerStyle = SpanStyle(fontWeight = FontWeight.Bold, fontSize = 17.sp)
+                processedLine = processedLine.removePrefix("# ")
+            } else if (processedLine.startsWith("- ") || processedLine.startsWith("* ")) {
+                append("• ")
+                processedLine = processedLine.substring(2)
+            } else if (processedLine.startsWith("> ")) {
+                append("▎ ")
+                processedLine = processedLine.removePrefix("> ")
+            }
+
+            val lineStartIndex = length
+            var cursor = 0
+            val matches = tokenRegex.findAll(processedLine).toList()
+
+            for (match in matches) {
+                val range = match.range
+                if (range.first > cursor) {
+                    append(processedLine.substring(cursor, range.first))
+                }
+                val token = match.value
+                when {
+                    token.startsWith("***") && token.endsWith("***") && token.length >= 6 -> {
+                        val inner = token.substring(3, token.length - 3)
+                        pushStyle(SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic))
+                        append(inner)
+                        pop()
+                    }
+                    token.startsWith("**") && token.endsWith("**") && token.length >= 4 -> {
+                        val inner = token.substring(2, token.length - 2)
+                        pushStyle(SpanStyle(fontWeight = FontWeight.Bold))
+                        append(inner)
+                        pop()
+                    }
+                    token.startsWith("~~") && token.endsWith("~~") && token.length >= 4 -> {
+                        val inner = token.substring(2, token.length - 2)
+                        pushStyle(SpanStyle(textDecoration = TextDecoration.LineThrough))
+                        append(inner)
+                        pop()
+                    }
+                    token.startsWith("__") && token.endsWith("__") && token.length >= 4 -> {
+                        val inner = token.substring(2, token.length - 2)
+                        pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                        append(inner)
+                        pop()
+                    }
+                    token.startsWith("`") && token.endsWith("`") && token.length >= 2 -> {
+                        val inner = token.substring(1, token.length - 1)
+                        pushStyle(SpanStyle(fontFamily = FontFamily.Monospace, background = codeBg, color = codeColor))
+                        append(" $inner ")
+                        pop()
+                    }
+                    (token.startsWith("*") && token.endsWith("*") && token.length >= 2) ||
+                    (token.startsWith("_") && token.endsWith("_") && token.length >= 2) -> {
+                        val inner = token.substring(1, token.length - 1)
+                        pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
+                        append(inner)
+                        pop()
+                    }
+                    else -> append(token)
+                }
+                cursor = range.last + 1
+            }
+
+            if (cursor < processedLine.length) {
+                append(processedLine.substring(cursor))
+            }
+
+            if (headerStyle != null) {
+                addStyle(headerStyle, lineStartIndex, length)
             }
         }
     }

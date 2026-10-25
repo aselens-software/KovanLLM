@@ -176,3 +176,36 @@ def test_pair_landing_page():
     assert res.status_code == 200
     assert "kovanllm://pair" in res.text
     assert "KovanLLM Station" in res.text
+
+def test_advanced_inference_settings_endpoint():
+    token = get_session_auth_token()
+    headers = {"Authorization": f"Bearer {token}"}
+
+    payload = {
+        "batch_size": 1024,
+        "physical_batch_size": 512,
+        "max_concurrent_predictions": 8,
+        "unified_kv_cache": True,
+        "context_checkpoints": True,
+        "rope_freq_base": 50000.0,
+        "rope_freq_scale": 2.0,
+        "speculative_decoding_enabled": True,
+        "speculative_draft_tokens": 8,
+        "flash_attention": True
+    }
+    res = client.post("/api/engine/config", json=payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["success"] is True
+    cfg = data["config"]
+    assert cfg["batch_size"] == 1024
+    assert cfg["physical_batch_size"] == 512
+    assert cfg["max_concurrent_predictions"] == 8
+    assert cfg["unified_kv_cache"] is True
+    assert cfg["context_checkpoints"] is True
+    assert cfg["rope_freq_base"] == 50000.0
+    assert cfg["rope_freq_scale"] == 2.0
+    assert cfg["speculative_decoding_enabled"] is True
+    assert cfg["speculative_draft_tokens"] == 8
+    assert cfg["flash_attention"] is True
+

@@ -49,7 +49,19 @@ data class EngineConfig(
     var systemRoleEnabled: Boolean = false,
     var systemPrompt: String = "",
     var language: String = "en",
-    var theme: String = "dark" // "dark" or "light"
+    var theme: String = "dark", // "dark" or "light"
+
+    // Advanced Model & Inference Parameters
+    var batchSize: Int = 512, // Değerlendirme parti boyutu
+    var physicalBatchSize: Int = 256, // Fiziksel parti boyutu (ubatch)
+    var maxConcurrentPredictions: Int = 4, // Max concurrent predictions
+    var unifiedKvCache: Boolean = true, // Unified KV cache
+    var contextCheckpoints: Boolean = false, // Context checkpoints / KV cache shift
+    var ropeFreqBase: Float = 10000.0f, // RoPE Frekans Temeli (Base)
+    var ropeFreqScale: Float = 1.0f, // RoPE Frekans Çarpanı (Scale)
+    var speculativeDecodingEnabled: Boolean = false, // Spekülatif Kod Çözme
+    var speculativeDraftTokens: Int = 5, // Draft token count
+    var flashAttention: Boolean = true // Flash attention
 )
 
 data class ModelPreset(
@@ -79,6 +91,14 @@ val GLOBAL_PRESETS = listOf(
         systemPrompt = "You are an expert software engineer. Provide clean, maintainable, and well-documented code with practical explanations."
     ),
     ModelPreset(
+        nameEn = "Code Reviewer & Security Auditor",
+        nameTr = "Kod İnceleme & Güvenlik Denetçisi",
+        icon = "🛡️",
+        descriptionEn = "Vulnerability audits, OWASP checks, and bug hunting",
+        descriptionTr = "Güvenlik açığı tespiti, OWASP kontrolleri ve kod kalitesi",
+        systemPrompt = "You are a senior security researcher and meticulous code reviewer. Identify vulnerabilities (CWE/OWASP), performance bottlenecks, and edge cases. Offer concrete, minimal fixes."
+    ),
+    ModelPreset(
         nameEn = "Language Specialist",
         nameTr = "Dil Uzmanı / Çevirmen",
         icon = "🌐",
@@ -101,5 +121,69 @@ val GLOBAL_PRESETS = listOf(
         descriptionEn = "Engaging narratives, metaphors, and storytelling",
         descriptionTr = "Özgün anlatım, kurgu ve hikaye tasarımı",
         systemPrompt = "You are a creative and engaging writer. Craft rich, vivid, and thoughtful narratives with compelling prose."
+    ),
+    ModelPreset(
+        nameEn = "Academic Researcher & Scientist",
+        nameTr = "Akademik Araştırmacı & Bilim İnsanı",
+        icon = "🔬",
+        descriptionEn = "Hypothesis testing, empirical rigor, and scientific methodology",
+        descriptionTr = "Bilimsel araştırma, veri analitiği ve akademik metinler",
+        systemPrompt = "You are a scientific researcher with rigorous analytical methodology. Formulate hypotheses, reference peer-reviewed principles, verify empirical data, and write with academic clarity."
+    ),
+    ModelPreset(
+        nameEn = "Data Analyst & SQL Maestro",
+        nameTr = "Veri Analisti & SQL Uzmanı",
+        icon = "📊",
+        descriptionEn = "Database schemas, fast SQL queries, and metrics",
+        descriptionTr = "Veritabanı şemaları, hızlı SQL sorguları ve metrik analizi",
+        systemPrompt = "You are an expert data engineer and SQL specialist. Design optimal database schemas, write high-performance analytical queries, and interpret metric distributions."
+    ),
+    ModelPreset(
+        nameEn = "DevOps & Cloud Architect",
+        nameTr = "DevOps & Bulut Mimarı",
+        icon = "☁️",
+        descriptionEn = "CI/CD pipelines, Docker, Kubernetes, and IaC",
+        descriptionTr = "CI/CD süreçleri, Docker, Kubernetes ve bulut altyapısı",
+        systemPrompt = "You are a seasoned DevOps engineer. Provide robust CI/CD pipelines, Docker/Kubernetes configurations, infrastructure as code, and cloud reliability patterns."
+    ),
+    ModelPreset(
+        nameEn = "Cyber Security Specialist",
+        nameTr = "Siber Güvenlik Uzmanı",
+        icon = "🔒",
+        descriptionEn = "Threat modeling, network forensics, and hardening",
+        descriptionTr = "Tehdit modelleme, ağ güvenliği ve sistem sıkılaştırma",
+        systemPrompt = "You are an ethical security engineer. Analyze threat vectors, inspect network security configs, penetration testing patterns, and hardening protocols."
+    ),
+    ModelPreset(
+        nameEn = "Math & Logic Tutor",
+        nameTr = "Matematik & Mantık Eğitmeni",
+        icon = "📐",
+        descriptionEn = "Step-by-step mathematical problem solving and proofs",
+        descriptionTr = "Adım adım matematiksel çözüm ve mantıksal ispatlar",
+        systemPrompt = "You are a patient and clear mathematics and logic tutor. Solve problems step-by-step, verify derivations rigorously, and explain foundational concepts intuitively."
+    ),
+    ModelPreset(
+        nameEn = "Executive Business Strategist",
+        nameTr = "İş Stratejisi & Yönetim Danışmanı",
+        icon = "💼",
+        descriptionEn = "Market analysis, financial feasibility, and strategic roadmaps",
+        descriptionTr = "Pazar analizi, finansal fizibilite ve stratejik yol haritası",
+        systemPrompt = "You are a strategic management consultant. Provide crisp SWOT analysis, financial feasibility breakdowns, competitive differentiation strategies, and execution roadmaps."
+    ),
+    ModelPreset(
+        nameEn = "Product Manager & UX Designer",
+        nameTr = "Ürün Yöneticisi & UX Tasarımcısı",
+        icon = "🎨",
+        descriptionEn = "User journeys, feature specs, and interaction design",
+        descriptionTr = "Kullanıcı akışları, özellik spesifikasyonu ve etkileşim tasarımı",
+        systemPrompt = "You are an empathetic product manager and UX architect. Break features into user stories, identify friction points, define clear acceptance criteria, and optimize usability."
+    ),
+    ModelPreset(
+        nameEn = "Turkish Language & TDK Editor",
+        nameTr = "Türkçe Dil & Yazım Kılavuzu",
+        icon = "🇹🇷",
+        descriptionEn = "Turkish grammar, spelling, stylistic editing, and TDK rules",
+        descriptionTr = "TDK kurallarına uygun imla, akıcı anlatım ve edebi zenginleştirme",
+        systemPrompt = "Sen Türk dili, imla ve edebiyatı konusunda uzman bir editörsün. Metinleri Türk Dil Kurumu (TDK) kurallarına göre denetle, akıcı ve zengin bir dille yeniden yapılandır."
     )
 )

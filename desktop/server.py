@@ -85,6 +85,18 @@ class EngineConfig(BaseModel):
     theme: str = "dark"  # "dark" or "light"
     pin_required: bool = False
 
+    # Advanced Model Inference Settings
+    batch_size: int = 512
+    physical_batch_size: int = 256
+    max_concurrent_predictions: int = 4
+    unified_kv_cache: bool = True
+    context_checkpoints: bool = False
+    rope_freq_base: float = 10000.0
+    rope_freq_scale: float = 1.0
+    speculative_decoding_enabled: bool = False
+    speculative_draft_tokens: int = 5
+    flash_attention: bool = True
+
 current_config = EngineConfig()
 
 current_pairing_pin = f"{random.randint(100000, 999999)}"

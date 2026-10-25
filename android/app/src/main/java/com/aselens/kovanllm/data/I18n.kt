@@ -87,7 +87,20 @@ object I18n {
             "privacy_policy" to "Privacy Policy",
             "privacy_policy_title" to "Privacy & Data Safety",
             "privacy_policy_body" to "• 100% Local Processing: All AI chats, prompts, and media stay directly between your phone and your private desktop station. No third-party servers store your conversations.\n\n• AdMob & Analytics: Google AdMob provides non-intrusive ads. AdMob may process device identifiers and ad interactions in compliance with Google Privacy Standards and UMP consent.\n\n• Permissions: Camera is used strictly to scan the desktop pairing QR code. Microphone is used only during active voice chat.\n\n• Open Source: Released under MIT License by Aselens Software℠ (https://aselens.com).",
-            "privacy_close" to "Close"
+            "privacy_close" to "Close",
+            "advanced_settings_title" to "Advanced Inference Settings",
+            "advanced_settings_desc" to "Physical batching, KV caching, RoPE frequency & speculative decoding.",
+            "batch_size_label" to "Evaluation Batch Size",
+            "physical_batch_size_label" to "Physical Batch Size (ubatch)",
+            "max_concurrent_predictions_label" to "Max Concurrent Predictions",
+            "unified_kv_cache_label" to "Unified KV Cache",
+            "context_checkpoints_label" to "Context Checkpoints (KV Shift)",
+            "rope_freq_base_label" to "RoPE Frequency Base",
+            "rope_freq_scale_label" to "RoPE Frequency Scale",
+            "speculative_decoding_label" to "Speculative Decoding",
+            "speculative_draft_tokens_label" to "Draft Tokens Count",
+            "flash_attention_label" to "Flash Attention Acceleration",
+            "all_presets" to "System Role Presets"
         ),
         "tr" to mapOf(
             "app_title" to "KovanLLM",
@@ -174,7 +187,20 @@ object I18n {
             "privacy_policy" to "Gizlilik Politikası",
             "privacy_policy_title" to "Gizlilik ve Veri Güvenliği",
             "privacy_policy_body" to "• %100 Yerel İşleme: Tüm yapay zeka sohbetleri, metinler ve medya dosyaları yalnızca telefonunuz ile kişisel bilgisayarınız arasında kalır. Hiçbir merkezi sunucuda depolanmaz.\n\n• AdMob ve Analitik: Uygulamada gösterilen reklamlar Google AdMob aracılığıyla sunulur. AdMob, Google Gizlilik Standartları ve UMP onayına uygun olarak cihaz tanımlayıcıları işleyebilir.\n\n• İzinler: Kamera izni sadece masaüstü QR eşleştirme kodunu taramak için, mikrofon izni ise yalnızca canlı sesli sohbet esnasında kullanılır.\n\n• Açık Kaynak: Aselens Software℠ (https://aselens.com) tarafından MIT Lisansı ile geliştirilmiştir.",
-            "privacy_close" to "Kapat"
+            "privacy_close" to "Kapat",
+            "advanced_settings_title" to "Gelişmiş Model & Çıkarım Ayarları",
+            "advanced_settings_desc" to "Parti boyutu, KV önbelleği, RoPE frekansı ve spekülatif çıkarım.",
+            "batch_size_label" to "Değerlendirme Parti Boyutu",
+            "physical_batch_size_label" to "Fiziksel Parti Boyutu (ubatch)",
+            "max_concurrent_predictions_label" to "Maksimum Eşzamanlı Tahmin",
+            "unified_kv_cache_label" to "Birleşik KV Önbelleği",
+            "context_checkpoints_label" to "Bağlam Denetim Noktaları (KV Shift)",
+            "rope_freq_base_label" to "RoPE Frekans Temeli (Base)",
+            "rope_freq_scale_label" to "RoPE Frekans Çarpanı (Scale)",
+            "speculative_decoding_label" to "Spekülatif Kod Çözme",
+            "speculative_draft_tokens_label" to "Taslak Token Sayısı",
+            "flash_attention_label" to "Flash Attention (Hızlandırma)",
+            "all_presets" to "Hazır Sistem Rolleri"
         )
     )
 

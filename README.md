@@ -1,103 +1,135 @@
-# 🐝 KovanLLM: Masaüstü & Bağımsız Mobil Yerel LLM İstasyonu (v1.1)
+# 🐝 KovanLLM: Desktop & Standalone Mobile Local LLM Station (v1.1)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-amber.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20Android-orange)](https://github.com/aselens/kovanllm)
 [![Version](https://img.shields.io/badge/Version-v1.1-blue)](https://github.com/aselens/kovanllm/releases)
-[![Created By](https://img.shields.io/badge/Created%20by-Aselens%20Software%E2%84%A0-black)](https://aselens.com)
+[![Author](https://img.shields.io/badge/Created%20by-Aselens%20Software%E2%84%A0-black)](https://aselens.com)
 
-**KovanLLM**, evinizdeki veya iş yerinizdeki bilgisayarınızda çalışan yerel büyük dil modellerini (LM Studio, Ollama, llama.cpp vb.) telefonunuza **harici hiçbir VPN, port yönlendirme veya karmaşık ağ ayarı gerektirmeden** bağlayan, masaüstünde istasyon servisi (PyQt6 + FastAPI), Android'de ise modern bir yerel uygulama (Native Jetpack Compose) olarak çalışan açık kaynaklı ekosistemdir.
+**KovanLLM** connects local large language models running on your home or workstation PC (LM Studio, Ollama, llama.cpp, etc.) directly to your Android device **without third-party VPNs, port forwarding, or complicated network configuration**. 
 
-**Created by [Aselens Software℠](https://aselens.com)** • Lisans: [MIT License](LICENSE)
+It operates as a lightweight desktop station service (PyQt6 + FastAPI) on Windows & Linux, paired with a modern native Android client (Kotlin + Jetpack Compose).
 
----
-
-## 🌟 Temel Özellikler
-
-### 1. 🖥️ Çapraz Platform Masaüstü İstasyonu (Windows & Linux)
-- **Windows Desteği:** `run_desktop.bat` veya Inno Setup kurulum sihirbazı (`KovanLLM_Station_v1.1_Setup.exe`) ile tek tıkla kurulum ve çalışma. Windows görev çubuğunda "KovanLLM" kimliği ve özel ikon ile görünür.
-- **Linux Desteği:** `./run_desktop.sh` ve `.desktop` başlatıcı entegrasyonu.
-- **Bağımsız İstasyon Portu (`27615`):** Sabit bir yerel motora bağımlı olmadan dinamik port üzerinden çalışır.
-- **Otomatik Tünel Fallback:** Görünmez Cloudflare Quick Tunnel ve `localhost.run` SSH tüneli desteği. Tünel olmasa bile yerel Wi-Fi ağı üzerinden kesintisiz çalışır.
-- **Canlı Model & Donanım Yönetimi:** Dereceli GPU yük aktarımı (%0 - %100 slider), bağlam uzunluğu (context length), CPU çekirdek sayısı, sistem rolü ve VRAM temizleme.
-- **İsteğe Bağlı PIN Güvenliği:** Masaüstünden isteğe bağlı olarak 6 haneli PIN doğrulaması açılıp kapatılabilir.
-
-### 2. 📱 Android Uygulaması (Google Play Hazır & Optimize)
-- **Google Play AAB & DEX Optimizasyonu:** R8/Proguard kuralları ile %25+ DEX optimizasyonu yapılmış, Google Play uyumlu `.aab` (Android App Bundle).
-- **Hafif & Doğal Ses (Live Voice):** Cihazın yerel TTS altyapısıyla entegre, token üretilirken eşzamanlı olarak metni seslendiren akıcı sesli sohbet.
-- **Dahili QR Kod Tarayıcı:** Google Play Services ML Kit Barkod Tarayıcı ve yerel kamera ile masaüstü ekranındaki QR kodu tek dokunuşla tarayıp anında bağlanma.
-- **Medya & Dosya Önizleme:** WhatsApp benzeri medya önizleme (görseller) ve `.txt` gibi metin belgelerinin sohbet içi önizlemesi.
-- **Mesaj Kuyruğu (Queue):** Model düşünürken kullanıcının yazdığı yeni mesajları otomatik sıraya alma ve mevcut işlem bitince kesintisiz devam etme.
-- **Otomatik Sohbet Başlığı:** Gönderilen ilk mesaja göre otomatik başlık üretimi.
-- **AdMob Entegrasyonu:** Banner ve sohbet içi kutu reklam desteği (Google UMP onay formu altyapısıyla GDPR/KVKK uyumlu).
-- **Marka & Tasarım:** Özel amber/turuncu vurgu rengi (`#D97706`), profesyonel FontAwesome ikonları, karanlık ve aydınlık tema.
+**Created by [Aselens Software℠](https://aselens.com)** • Licensed under the [MIT License](LICENSE)
 
 ---
 
-## 📁 Proje Dizin Yapısı
+## 🌟 Key Features
+
+### 1. 🖥️ Cross-Platform Desktop Station (Windows & Linux)
+- **Native Windows Support:** Instant double-click launcher (`run_desktop.bat`) and Inno Setup installer wizard (`installer/kovanllm_setup.iss`). Appears with its own pinned "KovanLLM" identity and custom icon on the Windows taskbar.
+- **Linux Integration:** Runs via `./run_desktop.sh` with native `.desktop` application menu launcher.
+- **Dedicated Station Port (`27615`):** Decoupled from model engines, serving as an intelligent local gateway, health monitor, and tunneling proxy.
+- **Seamless Tunneling Fallback:** Automated encrypted Cloudflare Quick Tunnel and `localhost.run` SSH fallback. Works entirely offline over local Wi-Fi LAN when no internet access is present.
+- **Optional 6-Digit PIN Security:** Desktop host can enforce 6-digit authentication for incoming client pairing.
+
+### 2. 📱 Native Android Client (Google Play Ready)
+- **Optimized Android App Bundle (`.aab`):** R8/Proguard rules delivering over 25% DEX code shrinking and resource optimization for Google Play store guidelines.
+- **Full Cleartext HTTP LAN Support:** Connect to any local IP (`192.168.x.x`, `10.x.x.x`) on Port 27615 without security policy restrictions.
+- **Discord-Style Markdown Rendering:** Full markdown support for both user prompts and model responses:
+  - `**bold**` & `*italic*` / `_italic_`
+  - `~~strikethrough~~` & `__underline__`
+  - `***bold italic***`
+  - `` `inline monospace code` ``
+  - Fenced code blocks (` ``` `) with language detection and one-tap code copying
+  - Headings (`# `, `## `, `### `), bullet points, and blockquotes (`> `)
+- **Dedicated Blue "+ New Chat" Action:** Prominently styled blue session creation button in both the sessions drawer and the top action bar.
+- **14 Professional System Roles:**
+  1. *General Assistant*
+  2. *Software Engineer*
+  3. *Code Reviewer & Security Auditor*
+  4. *Language Specialist & Polyglot*
+  5. *Executive Summarizer*
+  6. *Creative Writer & Storyteller*
+  7. *Academic Researcher & Scientist*
+  8. *Data Analyst & SQL Maestro*
+  9. *DevOps & Cloud Architect*
+  10. *Cyber Security Specialist*
+  11. *Math & Logic Tutor*
+  12. *Executive Business Strategist*
+  13. *Product Manager & UX Designer*
+  14. *Turkish Language & TDK Editor*
+- **Advanced Model & Inference Controls:**
+  - **Evaluation Batch Size:** Fine-tune batch processing (`128`, `256`, `512`, `1024`, `2048` tokens).
+  - **Physical Batch Size (ubatch):** Hardware micro-batch execution (`64`, `128`, `256`, `512`).
+  - **Max Concurrent Predictions:** Configurable parallel inference limit (`1`, `2`, `4`, `8`).
+  - **Unified KV Cache:** Single memory pool allocation for attention key-values.
+  - **Context Checkpoints / KV Shift:** Stateful context cache rotation.
+  - **RoPE Frequency Base & Scale:** Custom rotary positional embedding parameters.
+  - **Speculative Decoding:** Accelerated generation with configurable draft token lengths.
+  - **Flash Attention:** Low-latency GPU memory attention acceleration.
+- **Integrated QR Scanner:** Google Play Services ML Kit Barcode Scanner scans desktop pairing QR codes in milliseconds.
+- **Live Voice & Audio Playback:** Voice recognition and natural device text-to-speech with stream interruption support.
+- **WhatsApp-Style Media Previews:** Inline image and text file preview directly in conversation bubbles.
+- **AdMob & GDPR/KVKK Compliant:** Integrated AdMob banner & inline chat interstitials with Google User Messaging Platform (UMP) consent.
+
+---
+
+## 📁 Repository Structure
 
 ```
 kovanllm/
-├── android/                    # Bağımsız Android Uygulaması (Kotlin + Jetpack Compose)
+├── android/                    # Native Android App (Kotlin + Jetpack Compose)
 │   ├── app/
-│   │   ├── build.gradle.kts    # R8 minify & shrinkResources, AdMob & ML Kit
-│   │   ├── proguard-rules.pro  # DEX optimizasyonu ve keep kuralları
+│   │   ├── build.gradle.kts    # R8 minification, AdMob & ML Kit configuration
+│   │   ├── proguard-rules.pro  # DEX shrinking and keep rules
 │   │   └── src/main/java/com/aselens/kovanllm/
 │   │       ├── MainActivity.kt
 │   │       ├── ads/            # AdMob Banner, InlineBox, Interstitial & Consent
-│   │       ├── data/           # Repository, LiveVoice, I18n, Modeller
-│   │       ├── qr/             # Play Services QR Kod Tarayıcı
-│   │       └── ui/             # ChatScreen, ModelSettings, StationLauncher
+│   │       ├── data/           # Repository, LiveVoice, I18n, Presets, Models
+│   │       ├── qr/             # Play Services QR Code Scanner
+│   │       └── ui/             # ChatScreen, ModelSettingsScreen, StationLauncherScreen
 │   └── gradlew
-├── desktop/                    # Masaüstü İstasyon Servisi (PyQt6 + FastAPI)
-│   ├── desktop_gui.py          # İstasyon GUI penceresi (KovanLLM, PIN, Donanım)
-│   ├── server.py               # FastAPI İstasyon backend'i (Port 27615)
-│   ├── tunnel.py               # Cloudflare & localhost.run çoklu tünel yöneticisi
-│   ├── voice_engine.py         # Piper VITS & hafif ses sentezi altyapısı
-│   ├── run_desktop.bat         # Windows için tek tıkla başlatma betiği
-│   ├── run_desktop.sh          # Linux için başlatma betiği
-│   └── assets/                 # Logolar, FontAwesome SVG ikonları, icon.ico
+├── desktop/                    # Desktop Station Service (PyQt6 + FastAPI)
+│   ├── desktop_gui.py          # Station GUI (Tabs: Pairing, Engine, Hardware, Advanced)
+│   ├── server.py               # Station FastAPI backend (Port 27615)
+│   ├── tunnel.py               # Multi-provider encrypted tunnel manager
+│   ├── voice_engine.py         # Neural TTS & fallback voice engine
+│   ├── run_desktop.bat         # Single-click Windows launcher
+│   ├── run_desktop.sh          # Linux runner script
+│   ├── assets/                 # Icons, SVG assets, and logos
+│   └── tests/                  # Pytest station test suite (14 passing tests)
 ├── installer/
-│   └── kovanllm_setup.iss      # Inno Setup 6 Windows kurulum betiği
-├── docs/                       # Görsel varlıklar, logolar ve belgeler
-├── requirements.txt            # Python bağımlılıkları
-├── LICENSE                     # MIT Lisansı
+│   └── kovanllm_setup.iss      # Inno Setup 6 Windows installer script
+├── docs/                       # Screenshots, brand assets, and store compliance documents
+├── requirements.txt            # Python dependencies
+├── LICENSE                     # MIT License
 └── README.md
 ```
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma
+## 🚀 Quickstart Guide
 
-### 1. Windows Üzerinde Çalıştırma
-#### Yöntem A: Hızlı Başlatma
-1. Depoyu klonlayın veya indirin:
+### 1. Running on Windows
+#### Option A: Quick Batch Launcher
+1. Clone or download the repository:
    ```cmd
    git clone https://github.com/aselens/kovanllm.git
    cd kovanllm\desktop
    ```
-2. `run_desktop.bat` dosyasına çift tıklayın. Sanal ortamı otomatik oluşturup bağımlılıkları kuracak ve KovanLLM İstasyonunu başlatacaktır.
+2. Double-click `run_desktop.bat`. The script automatically sets up a `.venv` virtual environment, installs dependencies, and launches the station.
 
-#### Yöntem B: Inno Setup Kurulum Paketi
-1. [Inno Setup 6](https://jrsoftware.org/isdl.php) yüklü ise:
-2. `installer/kovanllm_setup.iss` dosyasını derleyin.
-3. Üretilen `dist/KovanLLM_Station_v1.1_Setup.exe` kurulum sihirbazını çalıştırarak Windows Program Menüsü ve Masaüstü kısayollarını oluşturun.
+#### Option B: Inno Setup Windows Installer
+1. Open [Inno Setup 6](https://jrsoftware.org/isdl.php).
+2. Compile `installer/kovanllm_setup.iss`.
+3. Run the resulting `dist/KovanLLM_Station_v1.1_Setup.exe` to install KovanLLM into your Program Files with Start Menu and Desktop shortcuts.
 
-### 2. Linux Üzerinde Çalıştırma
+### 2. Running on Linux
 ```bash
 git clone https://github.com/aselens/kovanllm.git
 cd kovanllm/desktop
 ./run_desktop.sh
 ```
 
-### 3. Android Uygulamasını Derleme & Yükleme
-#### Google Play İçin AAB Üretimi (Optimize Edilmiş):
+### 3. Building & Installing Android App
+#### Generate Release AAB for Google Play:
 ```bash
 cd android
 ./gradlew bundleRelease
 ```
-Çıktı dosyası: `android/app/build/outputs/bundle/release/app-release.aab`
+Output artifact: `android/app/build/outputs/bundle/release/app-release.aab`
 
-#### Yerel APK Derleme ve Telefona Yükleme:
+#### Build Local APK & Install via ADB:
 ```bash
 ./build_apk.sh
 adb install KovanLLM.apk
@@ -105,17 +137,17 @@ adb install KovanLLM.apk
 
 ---
 
-## 🔒 Güvenlik & Gizlilik
+## 🔒 Security & Privacy
 
-- **Yerel Veri Gizliliği:** Sohbetleriniz ve model ağırlıklarınız yalnızca yerel bilgisayarınızda işlenir.
-- **PIN Eşleştirme:** İsteğe bağlı olarak masaüstünde PIN koruması etkinleştirildiğinde, doğru 6 haneli PIN girilmedikçe mobil istemciye erişim izni verilmez.
-- **AdMob UMP Uyumluluğu:** Reklam gösterimleri öncesinde Google Consent SDK üzerinden kullanıcı rıza formu açılır.
+- **100% Local Inference:** Conversations, system prompts, and media stay strictly between your phone and your workstation PC.
+- **Station PIN Authentication:** Optional 6-digit pairing code prevents unauthorized access on shared local Wi-Fi networks.
+- **Privacy Standard Compliance:** AdMob integrations utilize Google UMP (User Messaging Platform) for transparent GDPR/KVKK consent.
 
 ---
 
-## 📄 Lisans ve Haklar
+## 📄 License & Attribution
 
-Bu proje [MIT Lisansı](LICENSE) altında açık kaynak olarak yayınlanmıştır.
+This project is licensed under the [MIT License](LICENSE).
 
-Copyright (c) 2026 **Aselens Software℠** ([https://aselens.com](https://aselens.com))
-Tüm hakları saklıdır.
+Copyright (c) 2026 **Aselens Software℠** ([https://aselens.com](https://aselens.com))  
+All rights reserved.

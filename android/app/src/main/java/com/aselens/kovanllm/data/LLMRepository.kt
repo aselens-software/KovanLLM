@@ -190,7 +190,17 @@ class LLMRepository {
                         maxTokens = json.optInt("max_tokens", -1),
                         systemRoleEnabled = json.optBoolean("system_role_enabled", false),
                         systemPrompt = json.optString("system_prompt", ""),
-                        language = json.optString("language", "en")
+                        language = json.optString("language", "en"),
+                        batchSize = json.optInt("batch_size", 512),
+                        physicalBatchSize = json.optInt("physical_batch_size", 256),
+                        maxConcurrentPredictions = json.optInt("max_concurrent_predictions", 4),
+                        unifiedKvCache = json.optBoolean("unified_kv_cache", true),
+                        contextCheckpoints = json.optBoolean("context_checkpoints", false),
+                        ropeFreqBase = json.optDouble("rope_freq_base", 10000.0).toFloat(),
+                        ropeFreqScale = json.optDouble("rope_freq_scale", 1.0).toFloat(),
+                        speculativeDecodingEnabled = json.optBoolean("speculative_decoding_enabled", false),
+                        speculativeDraftTokens = json.optInt("speculative_draft_tokens", 5),
+                        flashAttention = json.optBoolean("flash_attention", true)
                     )
                     Result.success(cfg)
                 } else {
@@ -222,6 +232,16 @@ class LLMRepository {
                 put("system_role_enabled", config.systemRoleEnabled)
                 put("system_prompt", config.systemPrompt)
                 put("language", config.language)
+                put("batch_size", config.batchSize)
+                put("physical_batch_size", config.physicalBatchSize)
+                put("max_concurrent_predictions", config.maxConcurrentPredictions)
+                put("unified_kv_cache", config.unifiedKvCache)
+                put("context_checkpoints", config.contextCheckpoints)
+                put("rope_freq_base", config.ropeFreqBase)
+                put("rope_freq_scale", config.ropeFreqScale)
+                put("speculative_decoding_enabled", config.speculativeDecodingEnabled)
+                put("speculative_draft_tokens", config.speculativeDraftTokens)
+                put("flash_attention", config.flashAttention)
             }
             val body = json.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
             val request = Request.Builder().url(url).post(body).build()

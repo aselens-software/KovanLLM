@@ -69,8 +69,8 @@ id_ed25519
 id_ed25519.pub
 *.secret
 .env
-.env.local
-.env.*.local
+.env.*
+*.env
 
 # --- Desktop Heavy Binaries & Local Models ---
 desktop/bin/cloudflared*

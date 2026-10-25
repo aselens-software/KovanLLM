@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- By default, disallow cleartext HTTP on public internet domains -->
-    <base-config cleartextTrafficPermitted="false">
+    <!-- Permit cleartext HTTP traffic across local Wi-Fi, LAN, and development station endpoints -->
+    <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="user" />
         </trust-anchors>
     </base-config>
-
-    <!-- Permit cleartext HTTP strictly for local developer workstation & LAN testing -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">127.0.0.1</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-    </domain-config>
 </network-security-config>
